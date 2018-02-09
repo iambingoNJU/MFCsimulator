@@ -1,7 +1,7 @@
 #include "mfc.h"
+#include <cstring>
 
 class CMyWinApp : public CWinApp {
-	DECLARE_DYNAMIC(CMyWinApp)
 public:
 	CMyWinApp() { cout << "CMyWinApp Constructor \n"; }
 	~CMyWinApp() { cout << "CMyWinApp Destructor \n"; }
@@ -10,10 +10,13 @@ public:
 
 
 class CMyFrameWnd : public CFrameWnd {
-	DECLARE_DYNAMIC(CMyFrameWnd)
+	//DECLARE_DYNAMIC(CMyFrameWnd)
+	DECLARE_DYNCREATE(CMyFrameWnd)
 public:
 	CMyFrameWnd() { Create(); cout << "CMyFrameWnd Constructor \n"; }
 	~CMyFrameWnd() { cout << "CMyFrameWnd Destructor \n"; }
+
+	void SayHello() { cout << "Hello CMyFrameWnd" << endl; }
 };
 
 // global function

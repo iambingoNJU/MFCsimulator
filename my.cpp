@@ -3,8 +3,9 @@
 // Global object
 CMyWinApp theApp;
 
-IMPLEMENT_DYNAMIC(CMyWinApp, CWinApp)
-IMPLEMENT_DYNAMIC(CMyFrameWnd, CFrameWnd)
+//IMPLEMENT_DYNAMIC(CMyWinApp, CWinApp)
+//IMPLEMENT_DYNAMIC(CMyFrameWnd, CFrameWnd)
+IMPLEMENT_DYNCREATE(CMyFrameWnd, CFrameWnd)
 
 BOOL CMyWinApp::InitInstance() {
 	cout << "CMyWinApp::InitInstance\n";
@@ -33,6 +34,7 @@ int main() {
 
 	// PrintAllClasses();
 
+/*
 	CView* pView = new CView();
 	cout << "Result: " << pView->IsKindOf(RUNTIME_CLASS(CWinApp)) << endl;
 	cout << "Result: " << pView->IsKindOf(RUNTIME_CLASS(CView)) << endl;
@@ -40,6 +42,18 @@ int main() {
 	cout << "Result: " << pView->IsKindOf(RUNTIME_CLASS(CObject)) << endl;
 	cout << "Result: " << pView->IsKindOf(RUNTIME_CLASS(CDocument)) << endl;
 	cout << "Result: " << pView->IsKindOf(RUNTIME_CLASS(CMyFrameWnd)) << endl;
+	*/
+
+	// Test Dynamic creation
+	CRuntimeClass* pClassRef;
+	CObject* pOb;
+	while(1) {
+		if((pClassRef = CRuntimeClass::Load()) == NULL)
+			break;
+
+		pOb = pClassRef->CreateObject();
+		if(pOb != NULL) pOb->SayHello();
+	}
 
 	return 0;
 }

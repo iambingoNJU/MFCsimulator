@@ -14,6 +14,34 @@ AFX_CLASSINIT::AFX_CLASSINIT(CRuntimeClass* pNewClass) {
 	CRuntimeClass::pFirstClass = pNewClass;
 }
 
+CObject* CRuntimeClass::CreateObject() {
+	if(m_pfnCreateObject == NULL) {
+		cout << "Error: Trying to create object which is not "
+			 << "DECLARE_DYNCREATE \nor DECLARE_SERIAL;"
+			 << m_lpszClassName << endl;
+		return NULL;
+	}
+	CObject* pObject = NULL;
+	pObject = (*m_pfnCreateObject)();
+
+	return pObject;
+}
+
+CRuntimeClass* PASCAL CRuntimeClass::Load() {
+	char szClassName[64];
+	CRuntimeClass* pClass;
+	cout << "enter a class name... ";
+	cin >> szClassName;
+
+	for(pClass = pFirstClass; pClass != NULL; pClass = pClass->m_pNextClass) {
+		if(strcmp(szClassName, pClass->m_lpszClassName) == 0)
+			return pClass;
+	}
+
+	cout << "Error: Class not found: " << szClassName << endl;
+	return NULL;
+}
+
 CRuntimeClass* CObject::GetRuntimeClass() const {
 	return &CObject::classCObject;
 }
@@ -57,8 +85,10 @@ BOOL CFrameWnd::PreCreateWindow() {
 IMPLEMENT_DYNAMIC(CCmdTarget, CObject)
 IMPLEMENT_DYNAMIC(CWinThread, CCmdTarget)
 IMPLEMENT_DYNAMIC(CWinApp, CWinThread)
-IMPLEMENT_DYNAMIC(CWnd, CCmdTarget)
-IMPLEMENT_DYNAMIC(CFrameWnd, CWnd)
+//IMPLEMENT_DYNAMIC(CWnd, CCmdTarget)
+//IMPLEMENT_DYNAMIC(CFrameWnd, CWnd)
+IMPLEMENT_DYNCREATE(CWnd, CCmdTarget)
+IMPLEMENT_DYNCREATE(CFrameWnd, CWnd)
 IMPLEMENT_DYNAMIC(CDocument, CCmdTarget)
 IMPLEMENT_DYNAMIC(CView, CWnd)
 
