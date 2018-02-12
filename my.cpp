@@ -112,7 +112,24 @@ int main() {
 	CMyDoc* pMyDoc = new CMyDoc();
 	CMyView* pMyView = new CMyView();
 	CFrameWnd* pMyFrame = (CMyFrameWnd*)pApp->m_pMainWnd;
+	pMyFrame->m_pViewActive = pMyView;
+	pMyView->m_pDocument = pMyDoc;
 
+	// test message routing
+	cout << endl << "pMyFrame received a WM_CREATE, routint path:" << endl;
+	AfxWndProc(0, WM_CREATE, 0, 0, pMyFrame);
+
+	cout << endl << "pMyView received a WM_PAINT, routint path:" << endl;
+	AfxWndProc(0, WM_PAINT, 0, 0, pMyView);
+
+	cout << endl << "pMyView received a WM_COMMAND, routint path:" << endl;
+	AfxWndProc(0, WM_COMMAND, 0, 0, pMyView);
+
+	cout << endl << "pMyFrame received a WM_COMMAND, routint path:" << endl;
+	AfxWndProc(0, WM_COMMAND, 0, 0, pMyFrame);
+
+
+/*
 	cout << endl << "CMyView Message Map: " << endl;
 	MsgMapPrinting(pMyView->GetMessageMap());
 
@@ -124,6 +141,7 @@ int main() {
 
 	cout << endl << "CMyWinApp Message Map: " << endl;
 	MsgMapPrinting(pApp->GetMessageMap());
+	*/
 
 	return 0;
 }

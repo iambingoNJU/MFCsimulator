@@ -19,7 +19,17 @@ typedef int				INT;
 typedef unsigned int	UINT;
 typedef long			LONG;
 
+typedef UINT			WPARAM;
+typedef LONG			LPARAM;
+typedef LONG			LRESULT;
+typedef int				HWND;
+
+
 #define WM_COMMAND				0x0111
+#define WM_CREATE				0x0001
+#define WM_PAINT				0x000f
+#define WM_NOTIFY				0x004e
+
 #define CObjectid				0xffff
 #define  CCmdTargetid			1
 #define   CWinThreadid			11
@@ -153,6 +163,8 @@ public:
 	CCmdTarget() { cout << "CCmdTarget Constructor \n"; }
 	~CCmdTarget() { cout << "CCmdTarget Destructor \n"; }
 
+	virtual BOOL OnCmdMsg(UINT nID, int nCode);
+
 	DECLARE_MESSAGE_MAP()
 };
 
@@ -180,6 +192,8 @@ public:
 	CDocument() { cout << "CDocument Constructor \n"; }
 	~CDocument() { cout << "CDocument Destructor \n"; }
 
+	virtual BOOL OnCmdMsg(UINT nID, int nCode);
+
 	DECLARE_MESSAGE_MAP()
 };
 
@@ -194,6 +208,10 @@ public:
 	BOOL CreateEx();
 	virtual BOOL PreCreateWindow();
 	void SayHello() { cout << "Hello CWnd" << endl; }
+
+	virtual LRESULT WindowProc(UINT nMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 };
@@ -227,10 +245,15 @@ public:
 };
 
 
+class CView;
 
 class CFrameWnd : public CWnd {
 	//DECLARE_DYNAMIC(CFrameWnd)
 	DECLARE_DYNCREATE(CFrameWnd)
+
+public:
+	CView* m_pViewActive;
+
 public:
 	CFrameWnd() { cout << "CFrameWnd Constructor \n"; }
 	~CFrameWnd() { cout << "CFrameWnd Destructor \n"; }
@@ -238,20 +261,36 @@ public:
 	virtual BOOL PreCreateWindow();
 	void SayHello() { cout << "Hello CFrameWnd" << endl; }
 
+	CView* GetActiveView() const;
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual BOOL OnCmdMsg(UINT nID, int nCode);
+
 	DECLARE_MESSAGE_MAP()
+
+	friend CView;
 };
 
 
 class CView : public CWnd {
 	DECLARE_DYNAMIC(CView)
 public:
+	CDocument* m_pDocument;
+
+public:
 	CView() { cout << "CView Constructor \n"; }
 	~CView() { cout << "CView Destructor \n"; }
 
+	virtual BOOL OnCmdMsg(UINT nID, int nCode);
+
 	DECLARE_MESSAGE_MAP()
+
+	friend CFrameWnd;
 };
 
 
 // Global function
 
 CWinApp* AfxGetApp();
+
+LRESULT AfxWndProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam, CWnd* pWnd);
+LRESULT AfxCallWndProc(CWnd* pWnd, HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam);

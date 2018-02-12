@@ -1,6 +1,7 @@
 #include "my.h"
 
 extern CMyWinApp theApp;
+extern void printlpEntries(AFX_MSGMAP_ENTRY* lpEntry);
 
 static char szCObject[] = "CObject";
 struct CRuntimeClass CObject::classCObject = 
@@ -55,6 +56,17 @@ BOOL CObject::IsKindOf(const CRuntimeClass* pClass) const {
 	return FALSE;
 }
 
+
+BOOL CCmdTarget::OnCmdMsg(UINT nID, int nCode) {
+	AFX_MSGMAP* pMessageMap;
+	for(pMessageMap = GetMessageMap(); pMessageMap != NULL;
+		pMessageMap = pMessageMap->pBaseMessageMap) {
+		printlpEntries(pMessageMap->lpEntries);
+	}
+
+	return FALSE;
+}
+
 BOOL CWnd::Create() {
 	cout << "CWnd::Create\n";
 	return TRUE;
@@ -71,6 +83,35 @@ BOOL CWnd::PreCreateWindow() {
 	return TRUE;
 }
 
+LRESULT CWnd::WindowProc(UINT nMsg, WPARAM wParam, LPARAM lParam) {
+	AFX_MSGMAP* pMessageMap;
+	AFX_MSGMAP_ENTRY* lpEntry;
+
+	if(nMsg == WM_COMMAND) {
+		if(OnCommand(wParam, lParam)) {
+			return 1L;
+		} else {
+			return (LRESULT)DefWindowProc(nMsg, wParam, lParam);
+		}
+	}
+
+	for(pMessageMap = GetMessageMap(); pMessageMap != NULL;
+		pMessageMap = pMessageMap->pBaseMessageMap) {
+		lpEntry = pMessageMap->lpEntries;
+		printlpEntries(lpEntry);
+	}
+
+	return 0;
+}
+
+LRESULT CWnd::DefWindowProc(UINT nMsg, WPARAM wParam, LPARAM lParam) {
+	return TRUE;
+}
+
+BOOL CWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
+	return OnCmdMsg(0, 0);
+}
+
 BOOL CFrameWnd::Create() {
 	cout << "CFrameWnd::Create\n";
 	CreateEx();
@@ -80,6 +121,43 @@ BOOL CFrameWnd::Create() {
 BOOL CFrameWnd::PreCreateWindow() {
 	cout << "CFrameWnd::PreCreateWindow\n";
 	return TRUE;
+}
+
+BOOL CFrameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
+	return CWnd::OnCommand(wParam, lParam);
+}
+
+CView* CFrameWnd::GetActiveView() const {
+	return m_pViewActive;
+}
+
+BOOL CFrameWnd::OnCmdMsg(UINT nID, int nCode) {
+	CView* pView = GetActiveView();
+	if(pView->OnCmdMsg(nID, nCode))
+		return TRUE;
+
+	if(CWnd::OnCmdMsg(nID, nCode))
+		return TRUE;
+
+	CWinApp* pApp = AfxGetApp();
+	if(pApp->OnCmdMsg(nID, nCode))
+		return TRUE;
+
+	return FALSE;
+}
+
+BOOL CDocument::OnCmdMsg(UINT nID, int nCode) {
+	if(CCmdTarget::OnCmdMsg(nID, nCode))
+		return TRUE;
+
+	return FALSE;
+}
+
+BOOL CView::OnCmdMsg(UINT nID, int nCode) {
+	if(CWnd::OnCmdMsg(nID, nCode))
+		return TRUE;
+	
+	return m_pDocument->OnCmdMsg(nID, nCode);
 }
 
 IMPLEMENT_DYNAMIC(CCmdTarget, CObject)
@@ -95,6 +173,14 @@ IMPLEMENT_DYNAMIC(CView, CWnd)
 // global function
 CWinApp* AfxGetApp() {
 	return theApp.m_pCurrentWinApp;
+}
+
+LRESULT AfxWndProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam, CWnd* pWnd) {
+	return AfxCallWndProc(pWnd, hWnd, nMsg, wParam, lParam);
+}
+
+LRESULT AfxCallWndProc(CWnd* pWnd, HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam) {
+	return pWnd->WindowProc(nMsg, wParam, lParam);
 }
 
 
