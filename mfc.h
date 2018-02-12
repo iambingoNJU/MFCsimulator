@@ -1,13 +1,82 @@
 #include <iostream>
 using namespace std;
 
-#define BOOL int
+#include "AFXMSG_.h"
+
+#define PASCAL 
+
 #define TRUE 1
 #define FALSE 0
-#define LPCSTR LPSTR
-typedef char* LPSTR;
-#define UINT int
-#define PASCAL 
+
+typedef char*			LPSTR;
+typedef const char*		LPCSTR;
+
+typedef unsigned long	DWORD;
+typedef int				BOOL;
+typedef unsigned char	BYTE;
+typedef unsigned short	WORD;
+typedef int				INT;
+typedef unsigned int	UINT;
+typedef long			LONG;
+
+#define WM_COMMAND				0x0111
+#define CObjectid				0xffff
+#define  CCmdTargetid			1
+#define   CWinThreadid			11
+#define    CWinAppid			111
+#define     CMyWinAppid			1111
+#define   CWndid				12
+#define    CFrameWndid			121
+#define     CMyFrameWndid		1211
+#define    CViewid				122
+#define     CMyViewid			1221
+#define   CDocumentid			13
+#define    CMyDocid				131
+
+
+////////////////////////////////////////////////////////////////
+// Window message map handling
+
+class CCmdTarget;
+class CWnd;
+
+typedef void (CCmdTarget::*AFX_PMSG)(void);
+typedef void (CWnd::*AFX_PMSGW)(void);
+
+struct AFX_MSGMAP_ENTRY {
+	UINT nMessage;		// windows message
+	UINT nCode;			// control code or WM_NOTIFY code
+	UINT nID;			// control ID (or 0 for windows message
+	UINT nLastID;		// used for entries specifing a range of control id's
+	UINT nSig;			// signature type (action) or pointer to message
+	AFX_PMSG pfn;		// routine to call (or special value)
+};
+
+struct AFX_MSGMAP {
+	AFX_MSGMAP* pBaseMessageMap;
+	AFX_MSGMAP_ENTRY* lpEntries;
+};
+
+#define DECLARE_MESSAGE_MAP() \
+	static AFX_MSGMAP_ENTRY _messageEntries[]; \
+	static AFX_MSGMAP messageMap; \
+	virtual AFX_MSGMAP* GetMessageMap() const;
+
+#define BEGIN_MESSAGE_MAP(theClass, baseClass) \
+	AFX_MSGMAP* theClass::GetMessageMap() const \
+		{ return &theClass::messageMap; } \
+	AFX_MSGMAP theClass::messageMap = \
+		{ &(baseClass::messageMap), \
+			(AFX_MSGMAP_ENTRY*) &(theClass::_messageEntries) }; \
+	AFX_MSGMAP_ENTRY theClass::_messageEntries[] = \
+		{
+
+#define END_MESSAGE_MAP() \
+			{ 0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0 } \
+		};
+
+////////////////////////////////////////////////////////////////
+
 
 class CObject;
 
@@ -60,6 +129,8 @@ public: \
 		{ return new class_name; } \
 	_IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, class_name::CreateObject)
 
+////////////////////////////////////////////////////////////////
+
 class CObject {
 public:
 	CObject() { cout << "CObject Constructor \n"; }
@@ -81,6 +152,8 @@ class CCmdTarget : public CObject {
 public:
 	CCmdTarget() { cout << "CCmdTarget Constructor \n"; }
 	~CCmdTarget() { cout << "CCmdTarget Destructor \n"; }
+
+	DECLARE_MESSAGE_MAP()
 };
 
 
@@ -106,6 +179,8 @@ class CDocument : public CCmdTarget {
 public:
 	CDocument() { cout << "CDocument Constructor \n"; }
 	~CDocument() { cout << "CDocument Destructor \n"; }
+
+	DECLARE_MESSAGE_MAP()
 };
 
 
@@ -119,6 +194,8 @@ public:
 	BOOL CreateEx();
 	virtual BOOL PreCreateWindow();
 	void SayHello() { cout << "Hello CWnd" << endl; }
+
+	DECLARE_MESSAGE_MAP()
 };
 
 class CWinApp : public CWinThread {
@@ -145,6 +222,8 @@ public:
 		cout << "CWinApp:Run\n";
 		return CWinThread::Run();
 	}
+
+	DECLARE_MESSAGE_MAP()
 };
 
 
@@ -158,6 +237,8 @@ public:
 	BOOL Create();
 	virtual BOOL PreCreateWindow();
 	void SayHello() { cout << "Hello CFrameWnd" << endl; }
+
+	DECLARE_MESSAGE_MAP()
 };
 
 
@@ -166,6 +247,8 @@ class CView : public CWnd {
 public:
 	CView() { cout << "CView Constructor \n"; }
 	~CView() { cout << "CView Destructor \n"; }
+
+	DECLARE_MESSAGE_MAP()
 };
 
 
